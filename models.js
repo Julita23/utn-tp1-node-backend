@@ -5,16 +5,27 @@ import { randomUUID } from "node:crypto";
 import { handleError } from "./utils/handleError.js";
 
 // 1° recuperar variables de entorno
-
+const PATH_FILE = ".data/users.json";
 // 2° Declarar los metodos
 
 const getUsers = () => {
+
+  const existsFile = existsSync(PATH_FILE);
+
+  if(!existsFile) {
+    writeFileSync(PATH_FILE, JSON.stringify([]));
+    return []
+  }
+
+  return JSON.parse(readFileSync(PATH_FILE));
   try {
   } catch (error) {
     // const objError = handleError()
     // return objError;
   }
 };
+
+console.log(getUsers);
 
 const getUserById = (id) => {
   try {
