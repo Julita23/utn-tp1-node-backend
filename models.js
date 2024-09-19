@@ -6,36 +6,38 @@ import { handleError } from "./utils/handleError.js";
 import { get } from "node:http";
 
 // 1° recuperar variables de entorno
-const PATH_FILE = ".data/users.json";
+const PATH_FILE = process.env.PATH_FILE;
 // 2° Declarar los metodos
 
-const getUsers = () => {
-
-  const existsFile = existsSync(PATH_FILE);
-
-  if(!PATH_FILE) {
-    return "Don't have permissions";
-  }
-
-  if(!existsFile) {
-    writeFileSync(PATH_FILE, JSON.stringify([]));
-    return []
-  }
-
-  return JSON.parse(readFileSync(PATH_FILE));
-  
+const getUsers = (urlFile) => {
   try {
+
+    if(!urlFile) {
+      throw new Error("Don't have permissions")
+    }
+
+    const existsFile = existsSync(PATH_FILE);
+
+    if(!existsFile) {
+      writeFileSync(PATH_FILE, JSON.stringify([]));
+      throw new Error("File doesn't exists...")
+    }
+
+    const users = JSON.parse(readFileSync(PATH_FILE));
+    return users;
+  
   } catch (error) {
-    // const objError = handleError()
-    // return objError;
+     const objError = handleError()
+     return objError;
   }
 };
 
-console.log(getUsers);
+const response = getUsers();
+console.log(response);
 
 const getUserById = (id) => {
   try {
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // addUser recibe un objeto con toda la data para el nuevo usuario
@@ -47,8 +49,8 @@ const getUserById = (id) => {
 const addUser = (userData) => {
   const { nombre, apellido, email, password } = userData;
 
-  const users = getUsers ();
-  const existsUser = users.find( userData => userData.nombre === nombre );
+  const users = getUsers();
+  const existsUser = users.find(userData => userData.nombre === nombre);
 
   if (existsUser) {
     return "User already exists"
@@ -69,7 +71,7 @@ const addUser = (userData) => {
   return newUser;
 
   try {
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // todos los datos del usuario seleccionado se podrían modificar menos el ID
@@ -80,32 +82,32 @@ const updateUser = (id, userData) => {
 
   const users = getUsers();
 
-  const existsUser = users.find( userData => userData.id === id );
-  
-  if(!existsUser) {
+  const existsUser = users.find(userData => userData.id === id);
+
+  if (!existsUser) {
     return "User doesn't exists";
   }
 
-  if(nombre) existsUser.nombre = nombre;
-  if(apellido) existsUser.apellido = apellido;
-  if(email) existsUser.email = email;
-  if(password) existsUser.password = password;
+  if (nombre) existsUser.nombre = nombre;
+  if (apellido) existsUser.apellido = apellido;
+  if (email) existsUser.email = email;
+  if (password) existsUser.password = password;
 
   writeFileSync(PATH_FILE, JSON.stringify(users));
 
   return existsUser;
 
   try {
-  } catch (error) {}
+  } catch (error) { }
 };
 
 const deleteUser = (id) => {
 
   const users = getUsers();
 
-  const existsUser = users.find( userData => userData.id === id );
+  const existsUser = users.find(userData => userData.id === id);
 
-  if(!existsUser) {
+  if (!existsUser) {
     return "Not found user";
   }
 
@@ -116,7 +118,7 @@ const deleteUser = (id) => {
   return existsUser;
 
   try {
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export { getUsers, getUserById, addUser, updateUser, deleteUser };
