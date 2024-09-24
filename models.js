@@ -6,8 +6,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { handleError } from "./utils/handleError.js";
+import { createUserObject, createUpdateUserObject, hashPassword, validateEmail } from "./utils/createObjectUser.js";
 import { config } from "dotenv";
-import { get } from "node:https";
 
 config();
 
@@ -77,7 +77,21 @@ const addUser = (userData) => {
       throw new Error("Missing data");
     }
 
-    let newUser = createNewUserObject(userData);
+    if (typeof nombre !== "string" || typeof apellido !== "string" || typeof email !== "string") {
+      throw new Error("Invalid data type");
+    }
+
+    validateEmail(email, users);
+    let newUser = createUserObject(userData);
+
+    newUser = {
+      id: randomUUID(),
+      firstName,
+      lastName,
+      email,
+      password: hashPassword(password),
+      isLoggedIn,
+    };
 
     const users = getUsers(PATH_USERS_FILE);
     users.push(newUser);
@@ -96,26 +110,32 @@ const addUser = (userData) => {
 // si se modifica el email, validar que este no exista
 const updateUser = (id, userData) => {
   try {
-    const { nombre, apellido, email, password } = userData;
-
     if (!id || !userData) {
-      throw new Error("ID is missing");
+      throw new Error("ID or data is missing");
     }
 
     const users = getUsers(PATH_USERS_FILE);
     const user = getUserById(id);
 
-    if (nombre) user.nombre = nombre;
-    if (apellido) user.apellido = apellido;
-    if (email) user.email = email;
-    if (password) user.password = password;
+    const updatedData = createUpdateUserObject(userData);
+    
+    if (updatedData.nombre) user.nombre = updatedData.nombre;
+    if (updatedData.apellido) user.apellido = updatedData.apellido;
 
-    writeFileSync(PATH_FILE, JSON.stringify(users));
+    if (updatedData.email) {
+      validateEmail(updatedData.email, users, id);
+      user.email = updatedData.email;
+    }
 
+    if (userData.password) {
+      user.password = hashPassword(userData.password);
+    }
+
+    writeFileSync(PATH_USERS_FILE, JSON.stringify(users));
     return user;
 
   } catch (error) {
-    const objError = handleError(error, PATH_USERS_ERROR)
+    const objError = handleError(error, PATH_USERS_ERROR);
     return objError;
   }
 };
@@ -129,9 +149,9 @@ const deleteUser = (id) => {
     const users = getUsers(PATH_USERS_FILE);
     const user = getUserById(id);
 
-    const newUser = users.filter((user) => user.id !== id);
+    const updatedUsers = users.filter((user) => user.id !== id);
 
-    writeFileSync(PATH_FILE, JSON.stringify(newUser));
+    writeFileSync(PATH_FILE, JSON.stringify(updatedUsers ));
 
     return user;
 
