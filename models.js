@@ -1,66 +1,61 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { randomUUID } from "node:crypto";
 // Averiguar que importar de NODE para realizar el hash del pass
 // Averiguar como "activar" la lectura de las variables de entorno del archivo .env (dotenv)
+// 1° recuperar variables de entorno
+// 2° Declarar los metodos
+
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { handleError } from "./utils/handleError.js";
-import { get } from "node:http";
 import { config } from "dotenv";
+import { get } from "node:https";
 
 config();
 
-// 1° recuperar variables de entorno
 const PATH_USERS_FILE = process.env.PATH_USERS_FILE;
 const PATH_USERS_ERROR = process.env.PATH_USERS_ERROR;
-// 2° Declarar los metodos
 
 const getUsers = (urlFile) => {
   try {
-
-    if(!urlFile) {
+    if (!urlFile) {
       throw new Error("Don't have permissions")
     }
 
     const existsFile = existsSync(PATH_USERS_FILE);
 
-    if(!existsFile) {
+    if (!existsFile) {
       writeFileSync(PATH_USERS_FILE, JSON.stringify([]));
       throw new Error("File doesn't exists...")
     }
 
     const users = JSON.parse(readFileSync(PATH_USERS_FILE));
     return users;
-  
+
   } catch (error) {
-     const objError = handleError(error, PATH_USERS_ERROR)
-     return objError;
+    const objError = handleError(error, PATH_USERS_ERROR)
+    return objError;
   }
 };
 
-const response = getUsers();
-console.log(response);
-
 const getUserById = (id) => {
   try {
-    if(!id) {
+    if (!id) {
       throw new Error("ID is missing");
     }
 
     const users = getUsers(PATH_USERS_FILE);
-    const user = users.find((user) => movie.id === id);
+    const user = users.find((user) => user.id === id);
 
-    if(!user) {
+    if (!user) {
       throw new Error("User not found");
     }
-    
+
     return user;
 
   } catch (error) {
     const objError = handleError(error, PATH_USERS_ERROR)
     return objError;
-   }
+  }
 };
-
-console.log(getUserById(12345));
 
 // addUser recibe un objeto con toda la data para el nuevo usuario
 // valida que esten los datos míminos para añadir un nuevo usuario
@@ -73,31 +68,24 @@ const addUser = (userData) => {
     const { nombre, apellido, email, password } = userData;
 
     const existsUser = users.find(userData => userData.nombre === nombre);
-  
+
     if (existsUser) {
-      throw new Error ("User already exists");
+      throw new Error("User already exists");
     }
 
-    if(!nombre || !apellido || !email || !password) {
-      throw new Error ("Missing data");
+    if (!nombre || !apellido || !email || !password) {
+      throw new Error("Missing data");
     }
-  
-    const newUser = {
-      id: randomUUID(),
-      nombre,
-      apellido,
-      email,
-      password,
-      isLoggedId,
-    };
-  
+
+    let newUser = createNewUserObject(userData);
+
     const users = getUsers(PATH_USERS_FILE);
     users.push(newUser);
     writeFileSync(PATH_USERS_FILE, JSON.stringify(users));
-  
+
     return newUser;
 
-  } catch (error) { 
+  } catch (error) {
     const objError = handleError(error, PATH_USERS_ERROR)
     return objError;
   }
@@ -110,23 +98,23 @@ const updateUser = (id, userData) => {
   try {
     const { nombre, apellido, email, password } = userData;
 
-    if(!id || !userData) {
+    if (!id || !userData) {
       throw new Error("ID is missing");
     }
-  
+
     const users = getUsers(PATH_USERS_FILE);
     const user = getUserById(id);
-  
+
     if (nombre) user.nombre = nombre;
     if (apellido) user.apellido = apellido;
     if (email) user.email = email;
     if (password) user.password = password;
-  
+
     writeFileSync(PATH_FILE, JSON.stringify(users));
-  
+
     return user;
-  
-  } catch (error) { 
+
+  } catch (error) {
     const objError = handleError(error, PATH_USERS_ERROR)
     return objError;
   }
@@ -134,20 +122,20 @@ const updateUser = (id, userData) => {
 
 const deleteUser = (id) => {
   try {
-    if(!id) {
+    if (!id) {
       throw new Error("ID is missing");
     }
-  
+
     const users = getUsers(PATH_USERS_FILE);
     const user = getUserById(id);
 
-  const newUser = users.filter((user) => user.id !== id);
+    const newUser = users.filter((user) => user.id !== id);
 
-  writeFileSync(PATH_FILE, JSON.stringify(newUser));
+    writeFileSync(PATH_FILE, JSON.stringify(newUser));
 
-  return user;
+    return user;
 
-  } catch (error) { 
+  } catch (error) {
     const objError = handleError(error, PATH_USERS_ERROR)
     return objError;
   }
