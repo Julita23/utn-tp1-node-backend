@@ -7,19 +7,14 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { handleError } from "./utils/handleError.js";
 import { createUserObject, createUpdateUserObject, hashPassword, validateEmail } from "./utils/createObjectUser.js";
-import { config } from "dotenv";
-
-config();
+import dotenv from "dotenv";
+dotenv.config();
 
 const PATH_USERS_FILE = process.env.PATH_USERS_FILE;
 const PATH_USERS_ERROR = process.env.PATH_USERS_ERROR;
 
-const getUsers = (urlFile) => {
+const getUsers = () => {
   try {
-    if (!urlFile) {
-      throw new Error("Don't have permissions")
-    }
-
     const existsFile = existsSync(PATH_USERS_FILE);
 
     if (!existsFile) {

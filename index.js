@@ -10,28 +10,38 @@ import {
     deleteUser,
 } from "./models.js";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import { createUserObject, createUpdateUserObject } from "./utils/createObjectUser.js";
 
 const args = process.argv.splice(2);
-
 const action = args[0];
 
 switch (action) {
-    case "list":
-        console.log(getUsers());
+   case "list":
+        console.log(getUsers(process.env.PATH_FILE_USER));
+        break;
+    case "getId":
+        console.log(getUsers(args[1]));
         break;
     case "add":
         const newUser = createUserObject(args);
         console.log(addUser(newUser));
         break;
     case "update":
-        console.log(updateUser(args[1], createUpdateUserObject(args)));
+        const updatedUser = createUpdateUserObject(args);
+        console.log(updateUser(updatedUser));
         break;
     case "delete":
         console.log(deleteUser(args[1]));
         break;
     default:
-        console.log("command not found...");
+        const error = handleError(
+            new Error("wrong command please use list, getId, update or delete for successful response"),
+            process.env.PATH_FILE_ERROR
+        );
+        console.log(error);
         break;
 }
 

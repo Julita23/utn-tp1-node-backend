@@ -12,6 +12,7 @@ const handleError = (error, path) => {
 
     dbError.push(newError);
     writeFileSync(path, JSON.stringify(dbError));
+    return newError;
 };
 
 export { handleError };
