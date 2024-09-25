@@ -8,6 +8,7 @@ import {
     addUser,
     updateUser,
     deleteUser,
+    getUserById,
 } from "./models.js";
 
 import dotenv from "dotenv";
@@ -23,7 +24,7 @@ switch (action) {
         console.log(getUsers(process.env.PATH_FILE_USER));
         break;
     case "getId":
-        console.log(getUsers(args[1]));
+        console.log(getUserById(args[1]));
         break;
     case "add":
         const newUser = createUserObject(args);
